@@ -40,6 +40,56 @@ Function Get-ArchivematicaChecksumFile {
         [Parameter()][String[]] $Exclude
     )
 
+    $DefaultExcludePatterns = @(
+        'Thumbs.db',
+        '.DS_Store',
+        '.Spotlight-V100',
+        '.Trashes'
+    )
+
+    If ($Exclude) {
+        $ExcludePatterns = $Exclude
+    }
+    Else {
+        $ExcludePatterns = $DefaultExcludePatterns
+    }
+
+    If ($Recurse) {
+        $FilesToChecksum = Get-ChildItem -File -Recurse -Path "$($Folder)\*" -Exclude $ExcludePatterns
+    }
+    Else {
+        $FilesToChecksum = Get-ChildItem -File -Path "$($Folder)\*" -Exclude $ExcludePatterns
+    }
+
+    $ChecksumFolder = Join-Path -Path $Folder -ChildPath 'metadata'
+    $ChecksumFile = Join-Path -Path $ChecksumFolder -ChildPath "checksum.$($Algorithm.ToLower())"
+
+    If (-Not(Test-Path -Path $ChecksumFile -PathType Leaf -ErrorAction SilentlyContinue)) {
+        New-Item -ItemType File -Path $ChecksumFile -Force | Out-Null
+    }
+    ElseIf ($Force) {
+        Clear-Content -Path $ChecksumFile -Force
+    }
+    Else {
+        Write-Host "$ChecksumFile already exists. To overwrite, pass -Force parameter." -ForegroundColor Red
+        return
+    }
+
+    $Checksums = [Collections.ArrayList]@()
+    $ResolvedFolder = (Resolve-Path $Folder).Path.TrimEnd('\')
+
+    ForEach ($File in $FilesToChecksum) {
+        $Hash = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash.ToLower()
+        $ResolvedPath = Resolve-Path $File
+        $Path = $ResolvedPath.Path.Replace($ResolvedFolder, '.').Replace('.\', '').Replace('\', '/')
+        $Checksums.Add("$Hash  $Path") | Out-Null
+    }
+
+    [IO.File]::WriteAllText($ChecksumFile, ($Checksums -Join "`n"))
+
+    $ChecksumFile
+}
+
 
 Export-ModuleMember -Function @(
     'Get-ArchivematicaChecksumFile'
