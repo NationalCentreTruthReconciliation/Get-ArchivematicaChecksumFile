@@ -1,3 +1,5 @@
+using namespace System;
+
 Function Get-ArchivematicaChecksumFile {
     <#
     .Synopsis
@@ -33,15 +35,12 @@ Function Get-ArchivematicaChecksumFile {
             Throw "$_ does not exist or is not a folder."
         }})]
         [String] $Folder,
-
-        [Parameter(Position=2, Mandatory=$True)]
-        [ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA512')]
-        [String] $Algorithm,
-
+        [Parameter(Position=2, Mandatory=$True)][ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA512')][String] $Algorithm,
         [Switch] $Recurse,
-
         [Parameter()][String[]] $Exclude
     )
 
 
-}
+Export-ModuleMember -Function @(
+    'Get-ArchivematicaChecksumFile'
+)
