@@ -23,8 +23,33 @@ Function Get-ArchivematicaChecksumFile {
     targeted directory.
 
     .Parameter Exclude
-    Array of files to exclude from checksum generation. Overrides the default list of files to
-    exclude like Thumbs.db and .DS_Store.
+    Array of files to exclude from checksum generation. Appends to the default list of files to
+    exclude like Thumbs.db and .DS_Store. To clear default exclude files, pass -ClearDefaultExclude
+
+    .Parameter ClearDefaultExclude
+    Clear the list of commonly excluded files. They are:
+    Thumbs.db
+    .DS_Store
+    .Spotlight-V100
+    .Trashes
+
+    .Example
+    Generate MD5 checksum file for C:\Users\you\transfer, ignoring any text files:
+
+    Get-ArchivematicaChecksumFile -Folder C:\Users\you\transfer -Algorithm MD5 -Exclude *.txt
+
+    .Example
+    Generate SHA512 checksum file for the current folder and all files in all subfolders:
+
+    Get-ArchivematicaChecksumFile -Folder . -Algorithm SHA512 -Recurse
+
+    .Example
+    Generate SHA256 checksum file for .\transfers\2020_transfer\, exclude jpgs, tifs, and pngs.
+    Include the normally excluded files like Thumbs.db. Generate checksums for every file in every
+    subfolder (minus the excluded images):
+
+    Get-ArchivematicaChecksumFile -Folder .\transfers\2020_transfer\ -Algorithm SHA256 -Exclude
+    *.jpg, *.tif, *.png -ClearDefaultExclude -Recurse
     #>
 
     [CmdletBinding()] Param(
@@ -37,7 +62,8 @@ Function Get-ArchivematicaChecksumFile {
         [String] $Folder,
         [Parameter(Position=2, Mandatory=$True)][ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA512')][String] $Algorithm,
         [Switch] $Recurse,
-        [Parameter()][String[]] $Exclude
+        [Parameter()][String[]] $Exclude,
+        [Switch] $ClearDefaultExclude
     )
 
     $DefaultExcludePatterns = @(
@@ -47,8 +73,17 @@ Function Get-ArchivematicaChecksumFile {
         '.Trashes'
     )
 
-    If ($Exclude) {
+    If ($Exclude -And $ClearDefaultExclude) {
         $ExcludePatterns = $Exclude
+    }
+    ElseIf ($Exclude -And -Not $ClearDefaultExclude)
+        $ExcludePatterns = $DefaultExcludePatterns
+        For ($Pattern in $Exclude) {
+            $ExcludePatterns += $Pattern
+        }
+    }
+    ElseIf (-Not $Exclude -And $ClearDefaultExclude)
+        $ExcludePatterns = @()
     }
     Else {
         $ExcludePatterns = $DefaultExcludePatterns
@@ -81,7 +116,7 @@ Function Get-ArchivematicaChecksumFile {
     ForEach ($File in $FilesToChecksum) {
         $Hash = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash.ToLower()
         $ResolvedPath = Resolve-Path $File
-        $Path = $ResolvedPath.Path.Replace($ResolvedFolder, '.').Replace('.\', '').Replace('\', '/')
+        $Path = $ResolvedPath.Path.TrimStart($ResolvedFolder).TrimStart('\').Replace('\', '/')
         $Checksums.Add("$Hash  $Path") | Out-Null
     }
 
