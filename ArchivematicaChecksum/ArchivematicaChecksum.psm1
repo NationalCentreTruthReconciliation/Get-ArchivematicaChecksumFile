@@ -63,7 +63,9 @@ Function Get-ArchivematicaChecksumFile {
         [Parameter(Position=2, Mandatory=$True)][ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA512')][String] $Algorithm,
         [Switch] $Recurse,
         [Parameter()][String[]] $Exclude,
-        [Switch] $ClearDefaultExclude
+        [Switch] $ClearDefaultExclude,
+        [Switch] $Force,
+        [Switch] $WhatIf
     )
 
     $DefaultExcludePatterns = @(
@@ -100,10 +102,20 @@ Function Get-ArchivematicaChecksumFile {
     $ChecksumFile = Join-Path -Path $ChecksumFolder -ChildPath "checksum.$($Algorithm.ToLower())"
 
     If (-Not(Test-Path -Path $ChecksumFile -PathType Leaf -ErrorAction SilentlyContinue)) {
-        New-Item -ItemType File -Path $ChecksumFile -Force | Out-Null
+        If (-Not $WhatIf) {
+            New-Item -ItemType File -Path $ChecksumFile -Force | Out-Null
+        }
+        Else {
+            New-Item -ItemType File -Path $ChecksumFile -Force -WhatIf | Out-Null
+        }
     }
     ElseIf ($Force) {
-        Clear-Content -Path $ChecksumFile -Force
+        If (-Not $WhatIf) {
+            Clear-Content -Path $ChecksumFile -Force
+        }
+        Else {
+            Clear-Content -Path $ChecksumFile -Force -WhatIf
+        }
     }
     Else {
         Write-Host "$ChecksumFile already exists. To overwrite, pass -Force parameter." -ForegroundColor Red
@@ -114,15 +126,27 @@ Function Get-ArchivematicaChecksumFile {
     $ResolvedFolder = (Resolve-Path $Folder).Path.TrimEnd('\')
 
     ForEach ($File in $FilesToChecksum) {
-        $Hash = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash.ToLower()
         $ResolvedPath = Resolve-Path $File
-        $Path = $ResolvedPath.Path.TrimStart($ResolvedFolder).TrimStart('\').Replace('\', '/')
+        $Path = $ResolvedPath.Path.Replace($ResolvedFolder, '.').Replace('.\', '').Replace('\', '/')
+        Write-Verbose "Processing $Path"
+        $Hash = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash.ToLower()
         $Checksums.Add("$Hash  $Path") | Out-Null
     }
 
-    [IO.File]::WriteAllText($ChecksumFile, ($Checksums -Join "`n"))
+    If (-Not $WhatIf) {
+        Write-Verbose "Writing checksums to file $ChecksumFile"
+        [IO.File]::WriteAllText($ChecksumFile, ($Checksums -Join "`n"))
+    }
+    Else {
+        Write-Host "What if: Writing the following contents to $ChecksumFile:"
+        ForEach ($line in $Checksums) {
+            Write-Host $line
+        }
+    }
 
-    $ChecksumFile
+    If (-Not $WhatIf) {
+        $ChecksumFile
+    }
 }
 
 
