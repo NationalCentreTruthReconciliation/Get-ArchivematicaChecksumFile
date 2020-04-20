@@ -76,13 +76,13 @@ Function Get-ArchivematicaChecksumFile {
     If ($Exclude -And $ClearDefaultExclude) {
         $ExcludePatterns = $Exclude
     }
-    ElseIf ($Exclude -And -Not $ClearDefaultExclude)
+    ElseIf ($Exclude -And -Not $ClearDefaultExclude) {
         $ExcludePatterns = $DefaultExcludePatterns
-        For ($Pattern in $Exclude) {
+        ForEach ($Pattern in $Exclude) {
             $ExcludePatterns += $Pattern
         }
     }
-    ElseIf (-Not $Exclude -And $ClearDefaultExclude)
+    ElseIf (-Not $Exclude -And $ClearDefaultExclude) {
         $ExcludePatterns = @()
     }
     Else {
