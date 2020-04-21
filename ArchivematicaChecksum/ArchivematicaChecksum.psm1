@@ -105,7 +105,7 @@ Function Get-ArchivematicaChecksumFile {
             New-Item -ItemType File -Path $ChecksumFile -Force | Out-Null
         }
         Else {
-            New-Item -ItemType File -Path $ChecksumFile -Force -WhatIf | Out-Null
+            New-Item -ItemType File -Path $ChecksumFile -Force -WhatIf
         }
     }
     ElseIf ($Force) {
