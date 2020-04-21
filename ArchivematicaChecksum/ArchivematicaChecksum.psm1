@@ -117,7 +117,7 @@ Function Get-ArchivematicaChecksumFile {
     ForEach ($File in $FilesToChecksum) {
         $ResolvedPath = Resolve-Path $File
         $Path = $ResolvedPath.Path.Replace($ResolvedFolder, '.').Replace('.\', '').Replace('\', '/')
-        Write-Verbose "Processing $Path"
+        Write-Verbose "Creating $Algorithm checksum for $Path"
         $Hash = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash.ToLower()
         $Checksums.Add("$Hash  $Path") | Out-Null
     }
