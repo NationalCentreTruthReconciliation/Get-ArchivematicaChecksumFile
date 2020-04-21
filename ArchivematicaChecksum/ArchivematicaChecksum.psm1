@@ -102,6 +102,15 @@ Function Get-ArchivematicaChecksumFile {
         return
     }
 
+    $ChecksumFolder = Join-Path -Path $Folder -ChildPath 'metadata'
+    $ChecksumFile = Join-Path -Path $ChecksumFolder -ChildPath "checksum.$($Algorithm.ToLower())"
+
+    $ChecksumFileExists = (Test-Path -Path $ChecksumFile -PathType Leaf -ErrorAction SilentlyContinue)
+    If ($ChecksumFileExists -And -Not $Force) {
+        Write-Host "$ChecksumFile already exists. To overwrite, pass -Force parameter." -ForegroundColor Red
+        return
+    }
+
     $Checksums = [Collections.ArrayList]@()
     $ResolvedFolder = (Resolve-Path $Folder).Path.TrimEnd('\')
 
@@ -113,28 +122,17 @@ Function Get-ArchivematicaChecksumFile {
         $Checksums.Add("$Hash  $Path") | Out-Null
     }
 
-    $ChecksumFolder = Join-Path -Path $Folder -ChildPath 'metadata'
-    $ChecksumFile = Join-Path -Path $ChecksumFolder -ChildPath "checksum.$($Algorithm.ToLower())"
-
-    If (-Not(Test-Path -Path $ChecksumFile -PathType Leaf -ErrorAction SilentlyContinue)) {
-        If (-Not $WhatIf) {
-            New-Item -ItemType File -Path $ChecksumFile -Force | Out-Null
-        }
-        Else {
-            New-Item -ItemType File -Path $ChecksumFile -Force -WhatIf
-        }
+    If (-Not $ChecksumFileExists -And -Not $WhatIf) {
+        New-Item -ItemType File -Path $ChecksumFile -Force | Out-Null
     }
-    ElseIf ($Force) {
-        If (-Not $WhatIf) {
-            Clear-Content -Path $ChecksumFile -Force
-        }
-        Else {
-            Clear-Content -Path $ChecksumFile -Force -WhatIf
-        }
+    ElseIf (-Not $ChecksumFileExists -And $WhatIf) {
+        New-Item -ItemType File -Path $ChecksumFile -Force -WhatIf
+    }
+    ElseIf (-Not $WhatIf) {
+        Clear-Content -Path $ChecksumFile -Force
     }
     Else {
-        Write-Host "$ChecksumFile already exists. To overwrite, pass -Force parameter." -ForegroundColor Red
-        return
+        Clear-Content -Path $ChecksumFile -Force -WhatIf
     }
 
     If (-Not $WhatIf) {
