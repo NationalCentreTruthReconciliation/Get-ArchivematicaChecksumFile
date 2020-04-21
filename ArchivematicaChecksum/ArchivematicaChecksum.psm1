@@ -62,7 +62,7 @@ Function Get-ArchivematicaChecksumFile {
         [String] $Folder,
         [Parameter(Position=2, Mandatory=$True)][ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA512')][String] $Algorithm,
         [Switch] $Recurse,
-        [Parameter()][String[]] $Exclude,
+        [String[]] $Exclude,
         [Switch] $ClearDefaultExclude,
         [Switch] $Force,
         [Switch] $WhatIf
