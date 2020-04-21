@@ -64,3 +64,19 @@ thisisasha256checksum  file1.jpg
 thisisasha256checksum  file2.txt
 thisisasha256checksum  data/file3.txt
 ```
+
+### Other Parameters
+
+You must always use the `-Folder` and `-Algorithm` parameters, but there are a number of other optional parameters you can use to have finer control over the operation of `Get-ArchivematicaChecksumFile`. These are:
+
+`-Recurse`: Descend into subdirectories and find files in them to checksum. See example above for how this works.
+
+`-Exclude <string[]>`: You can exclude extra files by pattern using this parameter. In practice, you would use a command like the following to exclude any JPG and TXT files: `Get-ArchivematicaChecksumFile -Exclude *.jpg, *.txt`
+
+`-ClearDefaultExclude`: This clears the list of commonly excluded files like Thumbs.db, and .DS_Store, so that they will be checksummed if they're found in the folder.
+
+`-Verbose`: Prints out verbose information. For processing large files or a large number of files, this is useful to see which file the program is currently working on.
+
+`-Force`: Forces the overwriting of a checksum file if it already exists.
+
+`-WhatIf`: Don't actually write to the checksum file, just show what would be written to it.
