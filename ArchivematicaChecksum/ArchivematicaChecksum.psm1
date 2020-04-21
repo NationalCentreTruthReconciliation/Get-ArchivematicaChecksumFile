@@ -68,27 +68,70 @@ Function Get-ArchivematicaChecksumFile {
         [Switch] $WhatIf
     )
 
+    If (-Not $Exclude) {
+        $Exclude = @()
+    }
+
+    $ExcludePatterns = Get-ExcludePatterns $Exclude $ClearDefaultExclude
+    $FilesToChecksum = Get-FilesToChecksum $Folder $Recurse $ExcludePatterns
+    $ChecksumFile = Get-ChecksumFilePath $Folder $Algorithm
+
+    If (-Not $FilesToChecksum) {
+        Write-Host 'No files found to process!'
+        return
+    }
+
+    If (-Not (FileOkayToCreateOrOverwrite $ChecksumFile $Force)) {
+        return
+    }
+    $Checksums = Get-ChecksumsForFiles $Folder $FilesToChecksum $Algorithm
+    # Getting checksums may take a long time. Maybe the file was created in the meantime by a
+    # separate process or user, so check again.
+    If (-Not (FileOkayToCreateOrOverwrite $ChecksumFile $Force)) {
+        return
+    }
+    CreateOrOverwriteFile $ChecksumFile $WhatIf
+    Write-ChecksumsToFile $ChecksumFile $Checksums $WhatIf
+}
+
+
+Function Get-ExcludePatterns {
+    Param(
+        [Parameter(Position=1, Mandatory=$False)]
+        [AllowEmptyCollection()]
+        [String[]] $Exclude,
+        [Parameter(Position=2, Mandatory=$True)][Switch] $ClearDefaultExclude
+    )
+
+    $ExcludePatterns = @()
+
     If (-Not $ClearDefaultExclude) {
-        $DefaultExcludePatterns = @(
+        $ExcludePatterns = @(
             'Thumbs.db',
             '.DS_Store',
             '.Spotlight-V100',
             '.Trashes'
         )
     }
-    Else {
-        $DefaultExcludePatterns = @()
-    }
 
     If ($Exclude) {
-        $ExcludePatterns = $DefaultExcludePatterns
         ForEach ($Pattern in $Exclude) {
             $ExcludePatterns += $Pattern
         }
     }
-    Else {
-        $ExcludePatterns = $DefaultExcludePatterns
-    }
+
+    return $ExcludePatterns
+}
+
+
+Function Get-FilesToChecksum {
+    Param(
+        [Parameter(Position=1, Mandatory=$True)][String] $Folder,
+        [Parameter(Position=2, Mandatory=$True)][Switch] $Recurse,
+        [Parameter(Position=3, Mandatory=$True)]
+        [AllowEmptyCollection()]
+        [String[]] $ExcludePatterns
+    )
 
     If ($Recurse) {
         $FilesToChecksum = Get-ChildItem -File -Recurse -Path "$($Folder)\*" -Exclude $ExcludePatterns
@@ -97,19 +140,28 @@ Function Get-ArchivematicaChecksumFile {
         $FilesToChecksum = Get-ChildItem -File -Path "$($Folder)\*" -Exclude $ExcludePatterns
     }
 
-    If (-Not $FilesToChecksum) {
-        Write-Host 'No files found to process!'
-        return
-    }
+    return $FilesToChecksum
+}
+
+
+Function Get-ChecksumFilePath {
+    Param(
+        [Parameter(Position=1, Mandatory=$True)][String] $Folder,
+        [Parameter(Position=2, Mandatory=$True)][String] $Algorithm
+    )
 
     $ChecksumFolder = Join-Path -Path $Folder -ChildPath 'metadata'
     $ChecksumFile = Join-Path -Path $ChecksumFolder -ChildPath "checksum.$($Algorithm.ToLower())"
+    return $ChecksumFile
+}
 
-    $ChecksumFileExists = (Test-Path -Path $ChecksumFile -PathType Leaf -ErrorAction SilentlyContinue)
-    If ($ChecksumFileExists -And -Not $Force) {
-        Write-Host "$ChecksumFile already exists. To overwrite, pass -Force parameter." -ForegroundColor Red
-        return
-    }
+
+Function Get-ChecksumsForFiles {
+    Param(
+        [Parameter(Position=1, Mandatory=$True)][String] $Folder,
+        [Parameter(Position=2, Mandatory=$True)][Object[]] $FilesToChecksum,
+        [Parameter(Position=3, Mandatory=$True)][String] $Algorithm
+    )
 
     $Checksums = [Collections.ArrayList]@()
     $ResolvedFolder = (Resolve-Path $Folder).Path.TrimEnd('\')
@@ -122,26 +174,62 @@ Function Get-ArchivematicaChecksumFile {
         $Checksums.Add("$Hash  $Path") | Out-Null
     }
 
-    If (-Not $ChecksumFileExists -And -Not $WhatIf) {
-        New-Item -ItemType File -Path $ChecksumFile -Force | Out-Null
+    return $Checksums
+}
+
+
+Function FileOkayToCreateOrOverwrite {
+    Param(
+        [Parameter(Position=1, Mandatory=$True)][String] $Path,
+        [Parameter(Position=2, Mandatory=$True)][Switch] $Force
+    )
+
+    $FileExists = (Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue)
+    If ($FileExists -And -Not $Force) {
+        Write-Host "$Path already exists. To overwrite, pass -Force parameter." -ForegroundColor Red
+        return $False
     }
-    ElseIf (-Not $ChecksumFileExists -And $WhatIf) {
-        New-Item -ItemType File -Path $ChecksumFile -Force -WhatIf
+    return $True
+}
+
+
+Function CreateOrOverwriteFile {
+    Param(
+        [Parameter(Position=1, Mandatory=$True)][String] $Path,
+        [Parameter(Position=3, Mandatory=$True)][Switch] $WhatIf
+    )
+
+    $FileExists = (Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue)
+
+    If (-Not $FileExists -And -Not $WhatIf) {
+        New-Item -ItemType File -Path $Path -Force | Out-Null
+    }
+    ElseIf (-Not $FileExists -And $WhatIf) {
+        New-Item -ItemType File -Path $Path -Force -WhatIf
     }
     ElseIf (-Not $WhatIf) {
-        Clear-Content -Path $ChecksumFile -Force
+        Clear-Content -Path $Path -Force
     }
     Else {
-        Clear-Content -Path $ChecksumFile -Force -WhatIf
+        Clear-Content -Path $Path -Force -WhatIf
     }
+}
+
+
+Function Write-ChecksumsToFile {
+    Param(
+        [Parameter(Position=1, Mandatory=$True)][String] $File,
+        [Parameter(Position=2, Mandatory=$True)][String[]] $Checksums,
+        [Parameter(Position=3, Mandatory=$True)][Switch] $WhatIf
+    )
 
     If (-Not $WhatIf) {
-        Write-Verbose "Writing checksums to file $ChecksumFile"
-        [IO.File]::WriteAllText((Resolve-Path $ChecksumFile), ($Checksums -Join "`n"))
-        (Get-Item $ChecksumFile)
+        Write-Verbose "Writing checksums to file $File"
+        [IO.File]::WriteAllText((Resolve-Path $File), ($Checksums -Join "`n"))
+        (Get-Item $File)
     }
     Else {
-        Write-Host "What if: Writing the following contents to $($ChecksumFile):"
+        Write-Host "What if: Writing the following contents to $($File):"
         ForEach ($line in $Checksums) {
             Write-Host $line
         }
