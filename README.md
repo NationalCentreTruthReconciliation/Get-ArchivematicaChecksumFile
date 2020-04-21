@@ -25,7 +25,9 @@ C:\Users\transfer\
         |- file3.txt
 ```
 
-If you want to create a SHA1 checksum for file1.jpg and file2.txt, and not any files in the data folder or the Thumbs.db file, you will run in PowerShell:
+For each call to `Get-ArchivematicaChecksumFile`, it is necessary to pass it which folder you want to process, and what algorithm you want to process the files in the folder with.
+
+If you want to create a SHA1 checksum for file1.jpg and file2.txt in our imaginary directory structure above, and not any files in the data folder or the Thumbs.db file, you will run in PowerShell:
 
 ```PowerShell
 Get-ArchivematicaChecksumFile -Folder C:\Users\transfer\ -Algorithm SHA1
@@ -38,7 +40,7 @@ C:\Users\transfer\
     |- file1.jpg
     |- file2.txt
     |- Thumbs.db
-    |- metadata
+    |- metadata\
         |- checksums.sha1
     |- data\
         |- file3.txt
