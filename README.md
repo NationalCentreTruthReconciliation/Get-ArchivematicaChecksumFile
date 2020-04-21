@@ -6,9 +6,9 @@ This tool can generate a checksum file using MD5, SHA1, SHA256, or SHA512 for a 
 
 ## Why we Wrote This
 
-Generating checksum files for Archivematica (Unix-based software) in Windows 10 was causing us a lot of headaches because PowerShell and other Windows tools may write a Byte-Order-Marker (BOM) and CRLF line endings.
+Generating checksum files for Archivematica (Unix-based software) in Windows 10 was causing us a lot of headaches because PowerShell and other Windows tools will write files with CRLF line endings, and may even write a Byte-Order-Marker (BOM).
 
-At the time of writing, Archivematica only supports checksum files generated without a BOM, and with LF line endings. This tool does not write a BOM, and writes checksum files with LF line endings so that there are no cross-platform issues relating to the encoding of the file.
+At the time of writing, Archivematica only supports checksum files generated without a BOM, and with LF line endings. This tool writes a checksum file that does not include a BOM, and has LF line endings. This resulting file is compatible with Archivematica. This alleviates the cross-platform issues relating to the encoding of the checksum file generated in Windows.
 
 The other reason for writing this tool was for us to have an easy-to-use and reliable tool to generate checksum files in Windows with the proper encoding, without having to enter a series of complicated PowerShell commands any time an archivist needs to create checksums.
 
