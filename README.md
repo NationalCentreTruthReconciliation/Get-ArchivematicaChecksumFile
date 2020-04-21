@@ -4,13 +4,21 @@ This is a PowerShell tool that can be used to generate a checksum file for an [A
 
 This tool can generate a checksum file using MD5, SHA1, SHA256, or SHA512 for a folder full of files. It can also generate a checksum file for nested directories using the `-Recurse` parameter.
 
+## Why we Wrote This
+
+Generating checksum files for Archivematica (Unix-based software) in Windows 10 was causing us a lot of headaches because PowerShell and other Windows tools may write a Byte-Order-Marker (BOM) and CRLF line endings.
+
+At the time of writing, Archivematica only supports checksum files generated without a BOM, and with LF line endings. This tool does not write a BOM, and writes checksum files with LF line endings so that there are no cross-platform issues relating to the encoding of the file.
+
+The other reason for writing this tool was for us to have an easy-to-use and reliable tool to generate checksum files in Windows with the proper encoding, without having to enter a series of complicated PowerShell commands any time an archivist needs to create checksums.
+
 ## How to Install It
 
 [First, make sure you have a PowerShell profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7#how-to-create-a-profile).
 
 Download or clone this repository, and run the included `DeployModule.ps1` script in PowerShell with the command `.\DeployModule.ps1`. This copies the contents of the repository into your PowerShell Modules folder. You will also need to import the module in your PowerShell profile by adding the line `Import-Module ArchivematicaChecksum` to it. Without telling PowerShell to import it in your profile, the code will not be loaded when you launch PowerShell.
 
-The deploy script will tell you which file you need to add the line to.
+The deploy script will tell you which file you need to add the line to. After deploying and adding the line to your profile, you will need to close and re-open PowerShell to have access to the new command, `Get-ArchivematicaChecksumFile`.
 
 ## How to Use It
 
