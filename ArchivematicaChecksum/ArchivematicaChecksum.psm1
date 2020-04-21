@@ -135,17 +135,17 @@ Function Get-ArchivematicaChecksumFile {
 
     If (-Not $WhatIf) {
         Write-Verbose "Writing checksums to file $ChecksumFile"
-        [IO.File]::WriteAllText($ChecksumFile, ($Checksums -Join "`n"))
+        [IO.File]::WriteAllText((Resolve-Path $ChecksumFile), ($Checksums -Join "`n"))
     }
     Else {
-        Write-Host "What if: Writing the following contents to $ChecksumFile:"
+        Write-Host "What if: Writing the following contents to $($ChecksumFile):"
         ForEach ($line in $Checksums) {
             Write-Host $line
         }
     }
 
     If (-Not $WhatIf) {
-        $ChecksumFile
+        (Get-Item $ChecksumFile)
     }
 }
 
