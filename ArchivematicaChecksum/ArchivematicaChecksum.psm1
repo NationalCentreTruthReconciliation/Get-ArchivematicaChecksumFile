@@ -68,24 +68,23 @@ Function Get-ArchivematicaChecksumFile {
         [Switch] $WhatIf
     )
 
-    $DefaultExcludePatterns = @(
-        'Thumbs.db',
-        '.DS_Store',
-        '.Spotlight-V100',
-        '.Trashes'
-    )
-
-    If ($Exclude -And $ClearDefaultExclude) {
-        $ExcludePatterns = $Exclude
+    If (-Not $ClearDefaultExclude) {
+        $DefaultExcludePatterns = @(
+            'Thumbs.db',
+            '.DS_Store',
+            '.Spotlight-V100',
+            '.Trashes'
+        )
     }
-    ElseIf ($Exclude -And -Not $ClearDefaultExclude) {
+    Else {
+        $DefaultExcludePatterns = @()
+    }
+
+    If ($Exclude) {
         $ExcludePatterns = $DefaultExcludePatterns
         ForEach ($Pattern in $Exclude) {
             $ExcludePatterns += $Pattern
         }
-    }
-    ElseIf (-Not $Exclude -And $ClearDefaultExclude) {
-        $ExcludePatterns = @()
     }
     Else {
         $ExcludePatterns = $DefaultExcludePatterns
