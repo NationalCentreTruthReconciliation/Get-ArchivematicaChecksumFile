@@ -97,6 +97,11 @@ Function Get-ArchivematicaChecksumFile {
         $FilesToChecksum = Get-ChildItem -File -Path "$($Folder)\*" -Exclude $ExcludePatterns
     }
 
+    If (-Not $FilesToChecksum) {
+        Write-Host 'No files found to process!'
+        return
+    }
+
     $Checksums = [Collections.ArrayList]@()
     $ResolvedFolder = (Resolve-Path $Folder).Path.TrimEnd('\')
 
