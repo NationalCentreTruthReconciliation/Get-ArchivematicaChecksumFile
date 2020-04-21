@@ -1,4 +1,5 @@
 # Get-ArchivematicaChecksumFile
+
 This is a PowerShell tool that can be used to generate a checksum file for an [Archivematica](https://www.archivematica.org/en/) transfer. This tool is specifically for generating a checksum file outside of the Archivematica system as per the Archivematica documentation [HERE](https://www.archivematica.org/en/docs/archivematica-1.11/user-manual/transfer/transfer/#transfer-checksums).
 
 This tool can generate a checksum file using MD5, SHA1, SHA256, or SHA512 for a folder full of files. It can also generate a checksum file for nested directories using the `-Recurse` parameter.
@@ -10,3 +11,56 @@ This tool can generate a checksum file using MD5, SHA1, SHA256, or SHA512 for a 
 Download or clone this repository, and run the included `DeployModule.ps1` script in PowerShell with the command `.\DeployModule.ps1`. This copies the contents of the repository into your PowerShell Modules folder. You will also need to import the module in your PowerShell profile by adding the line `Import-Module ArchivematicaChecksum` to it. Without telling PowerShell to import it in your profile, the code will not be loaded when you launch PowerShell.
 
 The deploy script will tell you which file you need to add the line to.
+
+## How to Use It
+
+We will use the following directory structure for these examples:
+
+```Text
+C:\Users\transfer\
+    |- file1.jpg
+    |- file2.txt
+    |- Thumbs.db
+    |- data\
+        |- file3.txt
+```
+
+If you want to create a SHA1 checksum for file1.jpg and file2.txt, and not any files in the data folder or the Thumbs.db file, you will run in PowerShell:
+
+```PowerShell
+Get-ArchivematicaChecksumFile -Folder C:\Users\transfer\ -Algorithm SHA1
+```
+
+The directory structure will then look like:
+
+```Text
+C:\Users\transfer\
+    |- file1.jpg
+    |- file2.txt
+    |- Thumbs.db
+    |- metadata
+        |- checksums.sha1
+    |- data\
+        |- file3.txt
+```
+
+The new checksums.sha1 file will have the following contents:
+
+```Text
+thisisasha1checksum  file1.jpg
+thisisasha1checksum  file2.txt
+```
+
+If you want to create a SHA256 checksum for all the files, including the file3.txt in the data folder (minus the Thumbs.db file), you will run a similar command in PowerShell, except passing the `-Recurse` parameter that allows for checksumming files in sub-directories.
+
+```PowerShell
+Get-ArchivematicaChecksumFile -Folder C:\Users\transfer\ -Algorithm SHA256 -Recurse
+```
+
+The resulting checksum.sha256 file created in the `C:\Users\transfer\metadata` folder will have the contents:
+
+```Text
+thisisasha256checksum  file1.jpg
+thisisasha256checksum  file2.txt
+thisisasha256checksum  data/file3.txt
+```
