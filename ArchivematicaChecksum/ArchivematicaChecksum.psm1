@@ -97,6 +97,17 @@ Function Get-ArchivematicaChecksumFile {
         $FilesToChecksum = Get-ChildItem -File -Path "$($Folder)\*" -Exclude $ExcludePatterns
     }
 
+    $Checksums = [Collections.ArrayList]@()
+    $ResolvedFolder = (Resolve-Path $Folder).Path.TrimEnd('\')
+
+    ForEach ($File in $FilesToChecksum) {
+        $ResolvedPath = Resolve-Path $File
+        $Path = $ResolvedPath.Path.Replace($ResolvedFolder, '.').Replace('.\', '').Replace('\', '/')
+        Write-Verbose "Processing $Path"
+        $Hash = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash.ToLower()
+        $Checksums.Add("$Hash  $Path") | Out-Null
+    }
+
     $ChecksumFolder = Join-Path -Path $Folder -ChildPath 'metadata'
     $ChecksumFile = Join-Path -Path $ChecksumFolder -ChildPath "checksum.$($Algorithm.ToLower())"
 
@@ -119,17 +130,6 @@ Function Get-ArchivematicaChecksumFile {
     Else {
         Write-Host "$ChecksumFile already exists. To overwrite, pass -Force parameter." -ForegroundColor Red
         return
-    }
-
-    $Checksums = [Collections.ArrayList]@()
-    $ResolvedFolder = (Resolve-Path $Folder).Path.TrimEnd('\')
-
-    ForEach ($File in $FilesToChecksum) {
-        $ResolvedPath = Resolve-Path $File
-        $Path = $ResolvedPath.Path.Replace($ResolvedFolder, '.').Replace('.\', '').Replace('\', '/')
-        Write-Verbose "Processing $Path"
-        $Hash = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash.ToLower()
-        $Checksums.Add("$Hash  $Path") | Out-Null
     }
 
     If (-Not $WhatIf) {

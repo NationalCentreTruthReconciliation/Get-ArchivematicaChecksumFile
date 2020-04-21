@@ -25,9 +25,9 @@ C:\Users\transfer\
         |- file3.txt
 ```
 
-For each call to `Get-ArchivematicaChecksumFile`, it is necessary to pass it which folder you want to process, and what algorithm you want to process the files in the folder with.
+For each call to `Get-ArchivematicaChecksumFile`, it is necessary to pass it which folder you want to process, and what algorithm you want to process the files in the folder with. For algorithms, you may pass one of: MD5, SHA1, SHA256, or SHA512.
 
-If you want to create a SHA1 checksum for file1.jpg and file2.txt in our imaginary directory structure above, and not any files in the data folder or the Thumbs.db file, you will run in PowerShell:
+If you want to create a SHA1 checksum for file1.jpg and file2.txt in our imaginary directory structure above, and not any files in the data folder or the Thumbs.db file, you should run the following in PowerShell:
 
 ```PowerShell
 Get-ArchivematicaChecksumFile -Folder C:\Users\transfer\ -Algorithm SHA1
@@ -73,7 +73,7 @@ You must always use the `-Folder` and `-Algorithm` parameters, but there are a n
 
 `-Recurse`: Descend into subdirectories and find files in them to checksum. See example above for how this works.
 
-`-Exclude <string[]>`: You can exclude extra files by pattern using this parameter. In practice, you would use a command like the following to exclude any JPG and TXT files: `Get-ArchivematicaChecksumFile -Exclude *.jpg, *.txt`
+`-Exclude <string[]>`: You can exclude extra files by pattern using this parameter. In practice, you would use a command like the following to exclude any JPG and TXT files: `Get-ArchivematicaChecksumFile -Exclude *.jpg, *.txt -Folder <fold.> -Algorithm <algo.>`
 
 `-ClearDefaultExclude`: This clears the list of commonly excluded files like Thumbs.db, and .DS_Store, so that they will be checksummed if they're found in the folder.
 
