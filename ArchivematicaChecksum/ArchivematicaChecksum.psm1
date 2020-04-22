@@ -196,7 +196,7 @@ Function FileOkayToCreateOrOverwrite {
 Function CreateOrOverwriteFile {
     Param(
         [Parameter(Position=1, Mandatory=$True)][String] $Path,
-        [Parameter(Position=3, Mandatory=$True)][Switch] $WhatIf
+        [Parameter(Position=2, Mandatory=$True)][Switch] $WhatIf
     )
 
     $FileExists = (Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue)
