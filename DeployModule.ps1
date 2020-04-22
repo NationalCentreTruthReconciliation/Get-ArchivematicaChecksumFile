@@ -11,6 +11,10 @@
  # above the module you want to copy to the documents folder.
  #>
 
+Param(
+    [Switch] $AutoAddImport
+)
+
 $MODULE_NAME = "ArchivematicaChecksum"
 $EXCLUDE_COPYING = @()
 
@@ -81,7 +85,15 @@ If ($filesDeleted -gt 0) {
 
 $profileContents = Get-Content $Profile -Raw
 If (-Not ($profileContents -Match $MODULE_NAME)) {
-    Write-Host "`nWARNING: It appears that you have not imported $($MODULE_NAME) in your PowerShell profile." -ForegroundColor Yellow
-    Write-Host "Add the following line to your PowerShell profile ($($Profile)):"
-    Write-Host "Import-Module $($MODULE_NAME)"
+    If ($AutoAddImport) {
+        $profileContentsWithNewImport = "$profileContents`r`nImport-Module $MODULE_NAME"
+        [System.IO.File]::WriteAllText((Resolve-Path $profile), $profileContentsWithNewImport)
+        Write-Host "Wrote `"Import-Module $MODULE_NAME`" to your profile."
+    }
+    Else {
+        Write-Host "`nWARNING: It appears that you have not imported $($MODULE_NAME) in your PowerShell profile." -ForegroundColor Yellow
+        Write-Host "Use the -AutoAddImport option or manually add the following line to your PowerShell profile ($($Profile)):"
+        Write-Host
+        Write-Host "Import-Module $MODULE_NAME"
+    }
 }
