@@ -16,9 +16,21 @@ The other reason for writing this tool was for us to have an easy-to-use and rel
 
 [First, make sure you have a PowerShell profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7#how-to-create-a-profile).
 
-Download or clone this repository, and run the included `DeployModule.ps1` script in PowerShell with the command `.\DeployModule.ps1`. This copies the contents of the repository into your PowerShell Modules folder. You will also need to import the module in your PowerShell profile by adding the line `Import-Module ArchivematicaChecksum` to it. Without telling PowerShell to import it in your profile, the code will not be loaded when you launch PowerShell.
+For those who are not frequent PowerShell users, you may need to update your execution policy if you have never done so. Without having an Unrestricted execution policy, you will not be able to run the deploy script and PowerShell may not be able to load your profile. To update your execution policy, run:
 
-The deploy script will tell you which file you need to add the line to. After deploying and adding the line to your profile, you will need to close and re-open PowerShell to have access to the new command, `Get-ArchivematicaChecksumFile`.
+```PowerShell
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
+```
+
+After you have a profile and an appropriate execution policy set, download or clone this repository, and run the included `DeployModule.ps1` script at the top level of this repository. To run the script, open up PowerShell in the same folder as the `DeployModule.ps1` script, and enter the command (optionally using the `-AutoAddImport` option)
+
+```PowerShell
+.\DeployModule.ps1 -AutoAddImport
+```
+
+This deploy script will copy the code for the ArchivematicaChecksum module into your PowerShell Modules folder, and will add a new line to your profile that tells PowerShell to import the code when you launch PowerShell in the future. If you would prefer to manually edit your profile or otherwise do not want the deploy script to touch your profile file, you can forgo the `-AutoAddImport` option and manually add the line `Import-Module ArchivematicaChecksum` to your profile. If you choose to go this route, the deploy script will let you know where your profile is, in case you forget.
+
+After deploying the code and adding the import statement manually in your profile if you chose to do so, you will need to close and re-open PowerShell to have access to the new command: `Get-ArchivematicaChecksumFile`.
 
 ## How to Use It
 
