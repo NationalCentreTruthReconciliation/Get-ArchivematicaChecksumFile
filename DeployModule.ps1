@@ -19,6 +19,14 @@ If (-Not (Test-Path $Profile -ErrorAction SilentlyContinue)) {
 $profileFolder = (Get-Item $Profile).Directory
 $destinationFolder = Join-Path -Path $profileFolder -ChildPath "Modules\$($MODULE_NAME)"
 $sourceFolder = Join-Path (Get-Item $PSScriptRoot) -ChildPath $MODULE_NAME
+[String[]] $sourceFiles = @(Get-ChildItem -Recurse -File -Path $sourceFolder -Exclude $EXCLUDE_COPYING | ForEach-Object { $_.FullName })
+[System.Collections.ArrayList] $existingDestinationFiles = @()
+$existingDestinationFiles = @(Get-ChildItem -Recurse -File -Path $destinationFolder -Exclude $EXCLUDE_COPYING | ForEach-Object { $_.FullName })
+
+If ($sourceFiles.Length -eq 0) {
+    Write-Host "There are no files to copy from the module $MODULE_NAME!"
+    Exit
+}
 
 If (-Not (Test-Path $destinationFolder -PathType Container -ErrorAction SilentlyContinue)) {
     New-Item $destinationFolder -ItemType Directory -Force | Out-Null
@@ -26,10 +34,6 @@ If (-Not (Test-Path $destinationFolder -PathType Container -ErrorAction Silently
 
 $filesUpdated = 0
 $filesDeleted = 0
-[String[]] $sourceFiles = @(Get-ChildItem -Recurse -File -Path $sourceFolder -Exclude $EXCLUDE_COPYING | ForEach-Object { $_.FullName })
-[System.Collections.ArrayList] $existingDestinationFiles = @()
-$existingDestinationFiles = @(Get-ChildItem -Recurse -File -Path $destinationFolder -Exclude $EXCLUDE_COPYING | ForEach-Object { $_.FullName })
-
 # Copy files if they are out of date or do not exist
 ForEach ($sourceFile in $sourceFiles) {
     $destinationFile = $sourceFile.Replace($sourceFolder, $destinationFolder)
