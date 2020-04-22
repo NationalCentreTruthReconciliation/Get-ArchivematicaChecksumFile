@@ -27,11 +27,11 @@ If (-Not (Test-Path $destinationFolder -PathType Container)) {
 # Copy files
 $filesUpdated = 0
 Write-Host "Deploying $($MODULE_NAME) module files to $($destinationFolder)"
-$sourceFiles = Get-ChildItem -Recurse -File -Path $sourceFolder -Exclude $EXCLUDE_COPYING
+$sourceFiles = (Get-ChildItem -Recurse -File -Path $sourceFolder -Exclude $EXCLUDE_COPYING).FullName
 ForEach ($sourceFile in $sourceFiles) {
-    $destinationFile = $sourceFile.FullName.Replace($sourceFolder, $destinationFolder)
+    $destinationFile = $sourceFile.Replace($sourceFolder, $destinationFolder)
 
-    If (-Not(Test-Path $destinationFile -PathType Leaf)) {
+    If (-Not(Test-Path $destinationFile -PathType Leaf -ErrorAction SilentlyContinue)) {
         New-Item -ItemType File -Path $destinationFile -Force | Out-Null
     }
 
@@ -40,19 +40,19 @@ ForEach ($sourceFile in $sourceFiles) {
 
     If ($destinationFileHash.Hash -ne $sourceFileHash.Hash) {
         Write-Host "Updating $($destinationFile)"
-        Copy-Item -Path $sourceFile.FullName -Destination $destinationFile -Force
+        Copy-Item -Path $sourceFile -Destination $destinationFile -Force
         $filesUpdated += 1
     }
 }
 
 # Remove files that don't exist for this module
 $filesDeleted = 0
-$destinationFiles = Get-ChildItem -Recurse -File -Path $destinationFolder -Exclude $EXCLUDE_COPYING
+$destinationFiles = (Get-ChildItem -Recurse -File -Path $destinationFolder -Exclude $EXCLUDE_COPYING).FullName
 ForEach ($destinationFile in $destinationFiles) {
-    $sourceMirror = $destinationFile.FullName.Replace($destinationFolder, $sourceFolder)
+    $sourceMirror = $destinationFile.Replace($destinationFolder, $sourceFolder)
 
-    If (-Not(Test-Path $sourceMirror -PathType Leaf)) {
-        Remove-Item -Path $destinationFile.FullName
+    If (-Not(Test-Path $sourceMirror -PathType Leaf -ErrorAction SilentlyContinue)) {
+        Remove-Item -Path $destinationFile
         $filesDeleted += 1
     }
 }
