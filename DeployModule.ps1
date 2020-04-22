@@ -1,7 +1,10 @@
 <#
- # Purpose: Deploys the module to the user's PowerShell documents folder.
+ # Purpose: Deploys the module to the user's PowerShell modules in their
+ # Documents.
+ #
  # It checks to see if the file contents are different before overwriting
- # the outdated files.
+ # the outdated files using MD5 hashes. If there are extra files in the
+ # corresponding modules folder in the user's Documents, these are removed.
  #
  # If you want to use this script for a different PowerShell module, you
  # simply would need to change $MODULE_NAME and put the script one level
