@@ -17,45 +17,48 @@ If (-Not (Test-Path $Profile -ErrorAction SilentlyContinue)) {
 }
 
 $profileFolder = (Get-Item $Profile).Directory
-$destinationFolder = Join-Path -Path $profileFolder -ChildPath "Modules/$($MODULE_NAME)"
+$destinationFolder = Join-Path -Path $profileFolder -ChildPath "Modules\$($MODULE_NAME)"
 $sourceFolder = Join-Path (Get-Item $PSScriptRoot) -ChildPath $MODULE_NAME
 
-If (-Not (Test-Path $destinationFolder -PathType Container)) {
+If (-Not (Test-Path $destinationFolder -PathType Container -ErrorAction SilentlyContinue)) {
     New-Item $destinationFolder -ItemType Directory -Force | Out-Null
 }
 
-# Copy files
 $filesUpdated = 0
-Write-Host "Deploying $($MODULE_NAME) module files to $($destinationFolder)"
-$sourceFiles = (Get-ChildItem -Recurse -File -Path $sourceFolder -Exclude $EXCLUDE_COPYING).FullName
+$filesDeleted = 0
+[String[]] $sourceFiles = @(Get-ChildItem -Recurse -File -Path $sourceFolder -Exclude $EXCLUDE_COPYING | ForEach-Object { $_.FullName })
+[System.Collections.ArrayList] $existingDestinationFiles = @()
+$existingDestinationFiles = @(Get-ChildItem -Recurse -File -Path $destinationFolder -Exclude $EXCLUDE_COPYING | ForEach-Object { $_.FullName })
+
+# Copy files if they are out of date or do not exist
 ForEach ($sourceFile in $sourceFiles) {
     $destinationFile = $sourceFile.Replace($sourceFolder, $destinationFolder)
 
-    If (-Not(Test-Path $destinationFile -PathType Leaf -ErrorAction SilentlyContinue)) {
-        New-Item -ItemType File -Path $destinationFile -Force | Out-Null
-    }
-
-    $destinationFileHash = Get-FileHash -Path $destinationFile -Algorithm SHA1
-    $sourceFileHash = Get-FileHash -Path $sourceFile -Algorithm SHA1
-
-    If ($destinationFileHash.Hash -ne $sourceFileHash.Hash) {
-        Write-Host "Updating $($destinationFile)"
+    If (-Not ($existingDestinationFiles.Contains($destinationFile))) {
+        Write-Host "Creating $destinationFile"
         Copy-Item -Path $sourceFile -Destination $destinationFile -Force
         $filesUpdated += 1
     }
-}
+    Else {
+        $existingDestinationFiles.Remove($destinationFile)
+        $destinationFileHash = (Get-FileHash -Path $destinationFile -Algorithm MD5).Hash
+        $sourceFileHash = (Get-FileHash -Path $sourceFile -Algorithm MD5).Hash
 
-# Remove files that don't exist for this module
-$filesDeleted = 0
-$destinationFiles = (Get-ChildItem -Recurse -File -Path $destinationFolder -Exclude $EXCLUDE_COPYING).FullName
-ForEach ($destinationFile in $destinationFiles) {
-    $sourceMirror = $destinationFile.Replace($destinationFolder, $sourceFolder)
-
-    If (-Not(Test-Path $sourceMirror -PathType Leaf -ErrorAction SilentlyContinue)) {
-        Remove-Item -Path $destinationFile
-        $filesDeleted += 1
+        If ($destinationFileHash -ne $sourceFileHash) {
+            Write-Host "Updating $destinationFile"
+            Copy-Item -Path $sourceFile -Destination $destinationFile -Force
+            $filesUpdated += 1
+        }
     }
 }
+
+# Delete any files without a mirror in the source module
+ForEach ($remainingDestinationFile in $existingDestinationFiles) {
+    Write-Host "Deleting $remainingDestinationFile"
+    Remove-Item $remainingDestinationFile -Force
+    $filesDeleted += 1
+}
+
 
 Write-Host "All changes deployed."
 Write-Host "$($filesUpdated) Files updated."
