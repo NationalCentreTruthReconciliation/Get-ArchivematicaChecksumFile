@@ -66,6 +66,11 @@ ForEach ($remainingDestinationFile in $existingDestinationFiles) {
     $filesDeleted += 1
 }
 
+# Automatically unblock main module file
+$mainModule = "$destinationFolder\$($MODULE_NAME).psm1"
+If (Test-Path -Path $mainModule -PathType Leaf -ErrorAction SilentlyContinue) {
+    Unblock-File $mainModule
+}
 
 Write-Host "All changes deployed."
 Write-Host "$($filesUpdated) Files updated."
