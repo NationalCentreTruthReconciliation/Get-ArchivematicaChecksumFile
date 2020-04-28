@@ -1,5 +1,9 @@
 using namespace System;
 
+. $PSScriptRoot\FileSystem.ps1
+. $PSScriptRoot\Exclude.ps1
+. $PSScriptRoot\Checksum.ps1
+
 Function Get-ArchivematicaChecksumFile {
     <#
     .Synopsis
@@ -74,7 +78,7 @@ Function Get-ArchivematicaChecksumFile {
     $ChecksumFile = Get-ChecksumFilePath $Folder $Algorithm
     $Exclude += (Split-Path $ChecksumFile -Leaf)
     $ExcludePatterns = Get-ExcludePatterns $Exclude $ClearDefaultExclude
-    $FilesToChecksum = Get-FilesToChecksum $Folder $Recurse $ExcludePatterns
+    $FilesToChecksum = Get-Files $Folder $Recurse $ExcludePatterns
 
     If (-Not $FilesToChecksum) {
         Write-Host 'No files found to process!'
@@ -93,150 +97,6 @@ Function Get-ArchivematicaChecksumFile {
     CreateOrOverwriteFile $ChecksumFile $WhatIf
     Write-ChecksumsToFile $ChecksumFile $Checksums $WhatIf
 }
-
-
-Function Get-ExcludePatterns {
-    Param(
-        [Parameter(Position=1, Mandatory=$False)]
-        [AllowEmptyCollection()]
-        [String[]] $Exclude,
-        [Parameter(Position=2, Mandatory=$True)][Switch] $ClearDefaultExclude
-    )
-
-    $ExcludePatterns = @()
-
-    If (-Not $ClearDefaultExclude) {
-        $ExcludePatterns = @(
-            'Thumbs.db',
-            '.DS_Store',
-            '.Spotlight-V100',
-            '.Trashes'
-        )
-    }
-
-    If ($Exclude) {
-        ForEach ($Pattern in $Exclude) {
-            $ExcludePatterns += $Pattern
-        }
-    }
-
-    return $ExcludePatterns
-}
-
-
-Function Get-FilesToChecksum {
-    Param(
-        [Parameter(Position=1, Mandatory=$True)][String] $Folder,
-        [Parameter(Position=2, Mandatory=$True)][Switch] $Recurse,
-        [Parameter(Position=3, Mandatory=$True)]
-        [AllowEmptyCollection()]
-        [String[]] $ExcludePatterns
-    )
-
-    If ($Recurse) {
-        $FilesToChecksum = Get-ChildItem -File -Recurse -Path $Folder -Exclude $ExcludePatterns
-    }
-    Else {
-        $FolderWithWildcard = $Folder.TrimEnd('\').TrimEnd('/') + '\*'
-        $FilesToChecksum = Get-ChildItem -File -Path $FolderWithWildcard -Exclude $ExcludePatterns
-    }
-
-    return $FilesToChecksum
-}
-
-
-Function Get-ChecksumFilePath {
-    Param(
-        [Parameter(Position=1, Mandatory=$True)][String] $Folder,
-        [Parameter(Position=2, Mandatory=$True)][String] $Algorithm
-    )
-
-    $ChecksumFolder = Join-Path -Path $Folder -ChildPath 'metadata'
-    $ChecksumFile = Join-Path -Path $ChecksumFolder -ChildPath "checksum.$($Algorithm.ToLower())"
-    return $ChecksumFile
-}
-
-
-Function Get-ChecksumsForFiles {
-    Param(
-        [Parameter(Position=1, Mandatory=$True)][String] $Folder,
-        [Parameter(Position=2, Mandatory=$True)][Object[]] $FilesToChecksum,
-        [Parameter(Position=3, Mandatory=$True)][String] $Algorithm
-    )
-
-    $Checksums = [Collections.ArrayList]@()
-    $ResolvedFolder = (Resolve-Path $Folder).Path.TrimEnd('\')
-
-    ForEach ($File in $FilesToChecksum) {
-        $ResolvedPath = Resolve-Path $File
-        $Path = $ResolvedPath.Path.Replace($ResolvedFolder, '.').Replace('.\', '').Replace('\', '/')
-        Write-Verbose "Creating $Algorithm checksum for $Path"
-        $Hash = (Get-FileHash -Path $File -Algorithm $Algorithm).Hash.ToLower()
-        $Checksums.Add("$Hash  $Path") | Out-Null
-    }
-
-    return $Checksums
-}
-
-
-Function FileOkayToCreateOrOverwrite {
-    Param(
-        [Parameter(Position=1, Mandatory=$True)][String] $Path,
-        [Parameter(Position=2, Mandatory=$True)][Switch] $Force
-    )
-
-    $FileExists = (Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue)
-    If ($FileExists -And -Not $Force) {
-        Write-Host "$Path already exists. To overwrite, pass -Force parameter." -ForegroundColor Red
-        return $False
-    }
-    return $True
-}
-
-
-Function CreateOrOverwriteFile {
-    Param(
-        [Parameter(Position=1, Mandatory=$True)][String] $Path,
-        [Parameter(Position=2, Mandatory=$True)][Switch] $WhatIf
-    )
-
-    $FileExists = (Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue)
-
-    If (-Not $FileExists -And -Not $WhatIf) {
-        New-Item -ItemType File -Path $Path -Force | Out-Null
-    }
-    ElseIf (-Not $FileExists -And $WhatIf) {
-        New-Item -ItemType File -Path $Path -Force -WhatIf
-    }
-    ElseIf (-Not $WhatIf) {
-        Clear-Content -Path $Path -Force
-    }
-    Else {
-        Clear-Content -Path $Path -Force -WhatIf
-    }
-}
-
-
-Function Write-ChecksumsToFile {
-    Param(
-        [Parameter(Position=1, Mandatory=$True)][String] $File,
-        [Parameter(Position=2, Mandatory=$True)][String[]] $Checksums,
-        [Parameter(Position=3, Mandatory=$True)][Switch] $WhatIf
-    )
-
-    If (-Not $WhatIf) {
-        Write-Verbose "Writing checksums to file $File"
-        [IO.File]::WriteAllText((Resolve-Path $File), ($Checksums -Join "`n"))
-        (Get-Item $File)
-    }
-    Else {
-        Write-Host "What if: Writing the following contents to $($File):"
-        ForEach ($line in $Checksums) {
-            Write-Host $line
-        }
-    }
-}
-
 
 Export-ModuleMember -Function @(
     'Get-ArchivematicaChecksumFile'
