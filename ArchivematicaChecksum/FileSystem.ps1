@@ -73,5 +73,3 @@ Function Write-ChecksumsToFile {
         }
     }
 }
-
-Export-ModuleMember -Function *

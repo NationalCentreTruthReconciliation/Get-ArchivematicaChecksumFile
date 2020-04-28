@@ -25,5 +25,3 @@ Function Get-ExcludePatterns {
 
     return $ExcludePatterns
 }
-
-Export-ModuleMember -Function *

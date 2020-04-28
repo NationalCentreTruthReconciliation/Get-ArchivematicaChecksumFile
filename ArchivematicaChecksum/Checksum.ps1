@@ -29,5 +29,3 @@ Function Get-ChecksumsForFiles {
 
     return $Checksums
 }
-
-Export-ModuleMember -Function *
