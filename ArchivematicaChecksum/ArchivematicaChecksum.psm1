@@ -134,10 +134,11 @@ Function Get-FilesToChecksum {
     )
 
     If ($Recurse) {
-        $FilesToChecksum = Get-ChildItem -File -Recurse -Path "$($Folder)\*" -Exclude $ExcludePatterns
+        $FilesToChecksum = Get-ChildItem -File -Recurse -Path $Folder -Exclude $ExcludePatterns
     }
     Else {
-        $FilesToChecksum = Get-ChildItem -File -Path "$($Folder)\*" -Exclude $ExcludePatterns
+        $FolderWithWildcard = $Folder.TrimEnd('\').TrimEnd('/') + '\*'
+        $FilesToChecksum = Get-ChildItem -File -Path $FolderWithWildcard -Exclude $ExcludePatterns
     }
 
     return $FilesToChecksum
