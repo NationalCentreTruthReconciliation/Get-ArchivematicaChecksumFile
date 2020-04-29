@@ -102,3 +102,17 @@ You must always use the `-Folder` and `-Algorithm` parameters, but there are a n
 `-Force`: Forces the overwriting of a checksum file if it already exists.
 
 `-WhatIf`: Don't actually write to the checksum file, just show what would be written to it.
+
+## Testing
+
+`Get-ArchivematicaChecksum` is tested using Pester 4. To run the tests, you must have Pester 4 installed. These are useful resources for finding out how to install it:
+- [Pester Installation Documentation](https://pester.dev/docs/introduction/installation)
+- [PowerShell Gallery - Pester](https://www.powershellgallery.com/packages/Pester/4.6.0)
+
+You should install version 4.6.0 or later.
+
+To run the tests, make sure your PowerShell is in the same folder as the deploy script and this README. Then, use the command:
+
+```PowerShell
+Invoke-Pester ArchivematicaChecksum
+```
