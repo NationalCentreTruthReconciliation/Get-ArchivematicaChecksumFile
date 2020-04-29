@@ -81,6 +81,11 @@ Describe 'Checksum Tests' {
             $Checksum | Should -BeExactly 'md5md5  testfile'
         }
 
+        It 'Should not escape spaces in filenames' {
+            $Checksum = Get-ChecksumsForFiles 'folder' @('this is  a   test.txt') 'MD5'
+            $Checksum | Should -BeExactly 'md5md5  this is  a   test.txt'
+        }
+
         It 'Should calculate checksums for multiple files' {
             $Checksums = Get-ChecksumsForFiles 'folder' @('file1', 'file2', 'file3', 'file4') 'SHA1'
             $Checksums | Should -HaveCount 4
