@@ -1,7 +1,7 @@
 Function FileOkayToCreateOrOverwrite {
     Param(
         [Parameter(Position=1, Mandatory=$True)][String] $Path,
-        [Parameter(Position=2, Mandatory=$True)][Switch] $Force
+        [Parameter(Position=2, Mandatory=$False)][Switch] $Force
     )
 
     $FileExists = (Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue)
@@ -15,7 +15,7 @@ Function FileOkayToCreateOrOverwrite {
 Function CreateOrOverwriteFile {
     Param(
         [Parameter(Position=1, Mandatory=$True)][String] $Path,
-        [Parameter(Position=2, Mandatory=$True)][Switch] $WhatIf
+        [Parameter(Position=2, Mandatory=$False)][Switch] $WhatIf
     )
 
     $FileExists = (Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue)
@@ -37,7 +37,7 @@ Function CreateOrOverwriteFile {
 Function Get-Files {
     Param(
         [Parameter(Position=1, Mandatory=$True)][String] $Folder,
-        [Parameter(Position=2, Mandatory=$True)][Switch] $Recurse,
+        [Parameter(Position=2, Mandatory=$False)][Switch] $Recurse,
         [Parameter(Position=3, Mandatory=$True)]
         [AllowEmptyCollection()]
         [String[]] $ExcludePatterns
@@ -58,7 +58,7 @@ Function Write-ChecksumsToFile {
     Param(
         [Parameter(Position=1, Mandatory=$True)][String] $File,
         [Parameter(Position=2, Mandatory=$True)][String[]] $Checksums,
-        [Parameter(Position=3, Mandatory=$True)][Switch] $WhatIf
+        [Parameter(Position=3, Mandatory=$False)][Switch] $WhatIf
     )
 
     If (-Not $WhatIf) {
