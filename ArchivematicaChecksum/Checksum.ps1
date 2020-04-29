@@ -1,7 +1,7 @@
 Function Get-ChecksumFilePath {
     Param(
         [Parameter(Position=1, Mandatory=$True)][String] $Folder,
-        [Parameter(Position=2, Mandatory=$True)][String] $Algorithm
+        [Parameter(Position=2, Mandatory=$True)][ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA512')][String] $Algorithm
     )
 
     $ChecksumFolder = Join-Path -Path $Folder -ChildPath 'metadata'
@@ -13,7 +13,7 @@ Function Get-ChecksumsForFiles {
     Param(
         [Parameter(Position=1, Mandatory=$True)][String] $Folder,
         [Parameter(Position=2, Mandatory=$True)][Object[]] $FilesToChecksum,
-        [Parameter(Position=3, Mandatory=$True)][String] $Algorithm
+        [Parameter(Position=3, Mandatory=$True)][ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA512')][String] $Algorithm
     )
 
     $Checksums = [Collections.ArrayList]@()
