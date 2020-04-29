@@ -151,5 +151,15 @@ Describe 'System Tests' {
         }
     }
 
+    Context 'Testing format of checksum file' {
+        It 'Should write file with \n line endings, not \r\n line endings' {
+
+        }
+
+        It 'Should not write file with a Byte-Order-Marker' {
+
+        }
+    }
+
     TestTeardown
 }
