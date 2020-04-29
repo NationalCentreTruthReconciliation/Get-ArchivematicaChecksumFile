@@ -128,5 +128,29 @@ Describe 'Checksum Integration Tests' -Tag 'Integration' {
             $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File2 -Algorithm MD5).Hash.ToLower())  file 2.txt"
             $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File3 -Algorithm MD5).Hash.ToLower())  folder/file 3.txt"
         }
+
+        It 'Should calculate the correct SHA1 checksums for each file' {
+            $Checksums = Get-ChecksumsForFiles -Folder $TestDrive -FilesToChecksum @($File1, $File2, $File3) -Algorithm SHA1
+            $JoinedChecksums = $Checksums -Join "`n"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File1 -Algorithm SHA1).Hash.ToLower())  file_1.txt"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File2 -Algorithm SHA1).Hash.ToLower())  file 2.txt"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File3 -Algorithm SHA1).Hash.ToLower())  folder/file 3.txt"
+        }
+
+        It 'Should calculate the correct SHA256 checksums for each file' {
+            $Checksums = Get-ChecksumsForFiles -Folder $TestDrive -FilesToChecksum @($File1, $File2, $File3) -Algorithm SHA256
+            $JoinedChecksums = $Checksums -Join "`n"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File1 -Algorithm SHA256).Hash.ToLower())  file_1.txt"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File2 -Algorithm SHA256).Hash.ToLower())  file 2.txt"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File3 -Algorithm SHA256).Hash.ToLower())  folder/file 3.txt"
+        }
+
+        It 'Should calculate the correct SHA512 checksums for each file' {
+            $Checksums = Get-ChecksumsForFiles -Folder $TestDrive -FilesToChecksum @($File1, $File2, $File3) -Algorithm SHA512
+            $JoinedChecksums = $Checksums -Join "`n"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File1 -Algorithm SHA512).Hash.ToLower())  file_1.txt"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File2 -Algorithm SHA512).Hash.ToLower())  file 2.txt"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File3 -Algorithm SHA512).Hash.ToLower())  folder/file 3.txt"
+        }
     }
 }
