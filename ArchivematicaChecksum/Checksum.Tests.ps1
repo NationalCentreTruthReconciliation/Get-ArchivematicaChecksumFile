@@ -111,3 +111,22 @@ Describe 'Checksum Unit Tests' -Tag 'Unit' {
         }
     }
 }
+
+Describe 'Checksum Integration Tests' -Tag 'Integration' {
+    $File1 = Join-Path -Path $TestDrive -ChildPath 'file_1.txt'
+    $File2 = Join-Path -Path $TestDrive -ChildPath 'file 2.txt'
+    $File3 = Join-Path -Path $TestDrive -ChildPath 'folder\file 3.txt'
+    New-Item -Path $File1 -ItemType File -Value 'test test test' -Force | Out-Null
+    New-Item -Path $File2 -ItemType File -Value 'testing testing testing' -Force | Out-Null
+    New-Item -Path $File3 -ItemType File -Value 't t t' -Force | Out-Null
+
+    Context 'Checksum calculation' {
+        It 'Should calculate the correct MD5 checksums for each file' {
+            $Checksums = Get-ChecksumsForFiles -Folder $TestDrive -FilesToChecksum @($File1, $File2, $File3) -Algorithm MD5
+            $JoinedChecksums = $Checksums -Join "`n"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File1 -Algorithm MD5).Hash.ToLower())  file_1.txt"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File2 -Algorithm MD5).Hash.ToLower())  file 2.txt"
+            $JoinedChecksums | Should -Match "$((Get-FileHash -Path $File3 -Algorithm MD5).Hash.ToLower())  folder/file 3.txt"
+        }
+    }
+}
