@@ -1,17 +1,22 @@
-$GLOBAL:TestEnvironmentFolder = "TestDrive:\TestEnvironment"
-$GLOBAL:InitialLocation = $Null
+$GLOBAL:InitialLocation = $null
 
-Function TestSetup {
-    Import-Module $PSScriptRoot\ArchivematicaChecksum.psm1
-    $GLOBAL:InitialLocation = Get-Location
-    Set-Location 'TestDrive:\'
-    New-Item -Path $GLOBAL:TestEnvironmentFolder -ItemType Directory
+Function Get-TestEnvironFolder {
+    If ($Null -ne $TestDrive) {
+        return Join-Path $TestDrive 'TestEnvironmentFolder'
+    }
+    Else {
+        throw 'TestDrive is Null, are you sure you''re calling this function in a Describe or Context block?'
+    }
 }
 
-Function ResetState {
-    Set-Location 'TestDrive:\'
-    Remove-Item -Path $GLOBAL:TestEnvironmentFolder -Recurse -Force
-    New-Item -Path $GLOBAL:TestEnvironmentFolder -ItemType Directory
+Function TestSetup {
+    $GLOBAL:InitialLocation = Get-Location
+    Import-Module $PSScriptRoot\ArchivematicaChecksum.psm1
+}
+
+Function PreTest {
+    Set-Location $TestDrive
+    New-Item -Path Get-TestEnvironFolder
 }
 
 Function TestTeardown {
@@ -22,6 +27,61 @@ Describe 'System Tests' {
     TestSetup
 
     # Run system tests here
+    Context 'Creating checksum files. No recursion' {
+        It 'Should create checksums for files in a folder' {
+            PreTest
+
+            $TestFolder = Get-TestEnvironFolder
+            $File1 = Join-Path $TestFolder 'file1.txt'
+            $File2 = Join-Path $TestFolder 'file2.txt'
+            New-Item -Path $File1 -ItemType File -Value 'test test test' -Force
+            New-Item -Path $File2 -ItemType File -Value 'testing testing testing' -Force
+            $File1MD5Checksum = (Get-FileHash $File1 MD5).Hash.ToLower()
+            $File2MD5Checksum = (Get-FileHash $File2 MD5).Hash.ToLower()
+
+            Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm 'MD5'
+
+            $GeneratedChecksumFile = Join-Path $TestFolder '\metadata\checksum.md5'
+            Test-Path -Path $GeneratedChecksumFile -PathType Leaf | Should -Be $True
+            $ChecksumsContents = (Get-Content $GeneratedChecksumFile -Raw)
+            $ChecksumsContents | Should -Match $File1MD5Checksum
+            $ChecksumsContents | Should -Match $File2MD5Checksum
+        }
+
+        It 'Should not create checksums for files in subfolders' {
+
+        }
+    }
+
+    Context 'Creating checksum files. With recursion' {
+        It 'Should create checksums for files in target folder and subfolders' {
+            PreTest
+
+            $TestFolder = Get-TestEnvironFolder
+            $File1 = Join-Path $TestFolder 'file1.txt'
+            $File2 = Join-Path $TestFolder 'folder_a\file2.txt'
+            $File3 = Join-Path $TestFolder 'folder_a\folder_b\file3.txt'
+            New-Item -Path $File1 -ItemType File -Value 'test test test' -Force
+            New-Item -Path $File2 -ItemType File -Value 'testing testing testing' -Force
+            New-Item -Path $File3 -ItemType File -Value 't t t' -Force
+            $File1SHA1Checksum = (Get-FileHash $File1 SHA1).Hash.ToLower()
+            $File2SHA1Checksum = (Get-FileHash $File2 SHA1).Hash.ToLower()
+            $File3SHA1Checksum = (Get-FileHash $File2 SHA1).Hash.ToLower()
+
+            Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm SHA1 -Recurse
+
+            $GeneratedChecksumFile = Join-Path $TestFolder '\metadata\checksum.sha1'
+            Test-Path -Path $GeneratedChecksumFile -PathType Leaf | Should -Be $True
+            $ChecksumsContents = (Get-Content $GeneratedChecksumFile -Raw)
+            $ChecksumsContents | Should -Match $File1SHA1Checksum
+            $ChecksumsContents | Should -Match $File2SHA1Checksum
+            $ChecksumsContents | Should -Match $File3SHA1Checksum
+        }
+
+        It 'Should create checksums for files if there are none in target folder but some in subfolders' {
+
+        }
+    }
 
     TestTeardown
 }
