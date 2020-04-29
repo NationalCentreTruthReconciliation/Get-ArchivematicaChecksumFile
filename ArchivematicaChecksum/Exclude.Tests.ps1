@@ -1,6 +1,6 @@
 . $PSScriptRoot\Exclude.ps1
 
-Describe 'Exclude tests' {
+Describe 'Exclude Unit Tests' -Tag 'Unit' {
     Context 'Get exclude patterns' {
         It 'Returns Thumbs.db, .DS_Store, .Spotlight-V100 and .Trashes by default' {
             $Patterns = Get-ExcludePatterns

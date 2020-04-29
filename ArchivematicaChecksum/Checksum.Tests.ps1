@@ -1,6 +1,6 @@
 . $PSScriptRoot\Checksum.ps1
 
-Describe 'Checksum Tests' {
+Describe 'Checksum Unit Tests' -Tag 'Unit' {
     Context 'Checksum file path generation' {
         It 'Should create checksum.md5 file is Algorithm is MD5' {
             $Path = Get-ChecksumFilePath '.' 'MD5'

@@ -27,7 +27,7 @@ Function TestTeardown {
     Set-Location $Global:InitialLocation
 }
 
-Describe 'System Tests' {
+Describe 'Full System Tests' -Tag 'System' {
     TestSetup
 
     # Run system tests here
