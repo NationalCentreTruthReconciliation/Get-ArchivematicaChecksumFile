@@ -3,7 +3,7 @@ Function Get-ExcludePatterns {
         [Parameter(Position=1, Mandatory=$False)]
         [AllowEmptyCollection()]
         [String[]] $Exclude,
-        [Parameter(Position=2, Mandatory=$True)][Switch] $ClearDefaultExclude
+        [Parameter(Position=2, Mandatory=$False)][Switch] $ClearDefaultExclude
     )
 
     $ExcludePatterns = @()
