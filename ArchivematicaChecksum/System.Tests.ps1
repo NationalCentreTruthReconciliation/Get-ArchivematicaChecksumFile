@@ -46,7 +46,7 @@ Describe 'System Tests' {
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm 'MD5'
 
             $GeneratedChecksumFile = Join-Path $TestFolder '\metadata\checksum.md5'
-            Test-Path -Path $GeneratedChecksumFile -PathType Leaf | Should -Be $True
+            $GeneratedChecksumFile | Should -Exist
             $ChecksumsContents = (Get-Content $GeneratedChecksumFile -Raw)
             $ChecksumsContents | Should -Match $File1MD5Checksum
             $ChecksumsContents | Should -Match $File2MD5Checksum
@@ -66,7 +66,7 @@ Describe 'System Tests' {
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm 'MD5'
 
             $GeneratedChecksumFile = Join-Path $TestFolder '\metadata\checksum.md5'
-            Test-Path -Path $GeneratedChecksumFile -PathType Leaf | Should -Be $True
+            $GeneratedChecksumFile | Should -Exist
             $ChecksumsContents = (Get-Content $GeneratedChecksumFile -Raw)
             $ChecksumsContents | Should -Match $File1MD5Checksum
             $ChecksumsContents | Should -Not -Match $File2MD5Checksum
@@ -84,7 +84,7 @@ Describe 'System Tests' {
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm 'MD5'
 
             $GeneratedChecksumFile = Join-Path $TestFolder '\metadata\checksum.md5'
-            Test-Path -Path $GeneratedChecksumFile -PathType Leaf | Should -Be $False
+            $GeneratedChecksumFile | Should -Not -Exist
         }
     }
 
@@ -106,7 +106,7 @@ Describe 'System Tests' {
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm SHA1 -Recurse
 
             $GeneratedChecksumFile = Join-Path $TestFolder '\metadata\checksum.sha1'
-            Test-Path -Path $GeneratedChecksumFile -PathType Leaf | Should -Be $True
+            $GeneratedChecksumFile | Should -Exist
             $ChecksumsContents = (Get-Content $GeneratedChecksumFile -Raw)
             $ChecksumsContents | Should -Match $File1SHA1Checksum
             $ChecksumsContents | Should -Match $File2SHA1Checksum
@@ -130,7 +130,7 @@ Describe 'System Tests' {
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm SHA1 -Recurse
 
             $GeneratedChecksumFile = Join-Path $TestFolder '\metadata\checksum.sha1'
-            Test-Path -Path $GeneratedChecksumFile -PathType Leaf | Should -Be $True
+            $GeneratedChecksumFile | Should -Exist
             $ChecksumsContents = (Get-Content $GeneratedChecksumFile -Raw)
             $ChecksumsContents | Should -Match $File1SHA1Checksum
             $ChecksumsContents | Should -Match $File2SHA1Checksum
@@ -147,7 +147,7 @@ Describe 'System Tests' {
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm SHA1 -Recurse
 
             $GeneratedChecksumFile = Join-Path $TestFolder '\metadata\checksum.sha1'
-            Test-Path -Path $GeneratedChecksumFile -PathType Leaf | Should -Be $False
+            $GeneratedChecksumFile | Should -Not -Exist
         }
     }
 
