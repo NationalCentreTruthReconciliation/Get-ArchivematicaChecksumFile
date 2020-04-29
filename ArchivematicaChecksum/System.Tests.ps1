@@ -40,8 +40,8 @@ Describe 'System Tests' {
             $File2 = Join-Path $TestFolder 'file2.txt'
             New-Item -Path $File1 -ItemType File -Value 'test test test' -Force
             New-Item -Path $File2 -ItemType File -Value 'testing testing testing' -Force
-            $File1MD5Checksum = (Get-FileHash $File1 MD5).Hash.ToLower()
-            $File2MD5Checksum = (Get-FileHash $File2 MD5).Hash.ToLower()
+            $File1MD5Checksum = (Get-FileHash $File1 -Algorithm MD5).Hash.ToLower()
+            $File2MD5Checksum = (Get-FileHash $File2 -Algorithm MD5).Hash.ToLower()
 
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm 'MD5'
 
@@ -60,8 +60,8 @@ Describe 'System Tests' {
             $File2 = Join-Path $TestFolder 'folder_a\file2.txt'
             New-Item -Path $File1 -ItemType File -Value 'test test test' -Force
             New-Item -Path $File2 -ItemType File -Value 'testing testing testing' -Force
-            $File1MD5Checksum = (Get-FileHash $File1 MD5).Hash.ToLower()
-            $File2MD5Checksum = (Get-FileHash $File2 MD5).Hash.ToLower()
+            $File1MD5Checksum = (Get-FileHash $File1 -Algorithm MD5).Hash.ToLower()
+            $File2MD5Checksum = (Get-FileHash $File2 -Algorithm MD5).Hash.ToLower()
 
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm 'MD5'
 
@@ -99,9 +99,9 @@ Describe 'System Tests' {
             New-Item -Path $File1 -ItemType File -Value 'test test test' -Force
             New-Item -Path $File2 -ItemType File -Value 'testing testing testing' -Force
             New-Item -Path $File3 -ItemType File -Value 't t t' -Force
-            $File1SHA1Checksum = (Get-FileHash $File1 SHA1).Hash.ToLower()
-            $File2SHA1Checksum = (Get-FileHash $File2 SHA1).Hash.ToLower()
-            $File3SHA1Checksum = (Get-FileHash $File2 SHA1).Hash.ToLower()
+            $File1SHA1Checksum = (Get-FileHash $File1 -Algorithm SHA1).Hash.ToLower()
+            $File2SHA1Checksum = (Get-FileHash $File2 -Algorithm SHA1).Hash.ToLower()
+            $File3SHA1Checksum = (Get-FileHash $File2 -Algorithm SHA1).Hash.ToLower()
 
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm SHA1 -Recurse
 
@@ -123,9 +123,9 @@ Describe 'System Tests' {
             New-Item -Path $File1 -ItemType File -Value 'test test test' -Force
             New-Item -Path $File2 -ItemType File -Value 'testing testing testing' -Force
             New-Item -Path $File3 -ItemType File -Value 't t t' -Force
-            $File1SHA1Checksum = (Get-FileHash $File1 SHA1).Hash.ToLower()
-            $File2SHA1Checksum = (Get-FileHash $File2 SHA1).Hash.ToLower()
-            $File3SHA1Checksum = (Get-FileHash $File2 SHA1).Hash.ToLower()
+            $File1SHA1Checksum = (Get-FileHash $File1 -Algorithm SHA1).Hash.ToLower()
+            $File2SHA1Checksum = (Get-FileHash $File2 -Algorithm SHA1).Hash.ToLower()
+            $File3SHA1Checksum = (Get-FileHash $File2 -Algorithm SHA1).Hash.ToLower()
 
             Get-ArchivematicaChecksumFile -Folder $TestFolder -Algorithm SHA1 -Recurse
 
