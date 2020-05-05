@@ -159,5 +159,29 @@ Describe 'File System Integration Tests' -Tag 'Integration' {
         New-Item -Path $File5 -Value '555555' -Force | Out-Null
         New-Item -Path $File6 -Value '666666' -Force | Out-Null
 
+        It 'Should not find any files if Recurse is False' {
+            $Files = (Get-Files -Folder $TestDrive -ExcludePatterns @()) -Join "`n"
+            $Files | Should -BeNullOrEmpty
+        }
+
+        It 'Should get files in subfolder if Recurse is True' {
+            $Files = (Get-Files -Folder $TestDrive -Recurse -ExcludePatterns @()) -Join "`n"
+            $Files | Should -Match 'first.jpg'
+            $Files | Should -Match 'second.txt'
+            $Files | Should -Match 'Thumbs.db'
+            $Files | Should -Match 'third.txt'
+            $Files | Should -Match 'fourth.txt'
+            $Files | Should -Match '.DS_Store'
+        }
+
+        It 'Should not get files excluded by pattern when Recurse is True' {
+            $Files = (Get-Files -Folder $TestDrive -Recurse -ExcludePatterns @('*.jpg', '.DS_Store', '*.db')) -Join "`n"
+            $Files | Should -Not -Match 'first.jpg'
+            $Files | Should -Match 'second.txt'
+            $Files | Should -Not -Match 'Thumbs.db'
+            $Files | Should -Match 'third.txt'
+            $Files | Should -Match 'fourth.txt'
+            $Files | Should -Not -Match '.DS_Store'
+        }
     }
 }
