@@ -78,7 +78,13 @@ Function Get-ArchivematicaChecksumFile {
     $ChecksumFile = Get-ChecksumFilePath $Folder $Algorithm
     $Exclude += (Split-Path $ChecksumFile -Leaf)
     $ExcludePatterns = Get-ExcludePatterns $Exclude $ClearDefaultExclude
-    $FilesToChecksum = Get-Files $Folder $Recurse $ExcludePatterns
+
+    If ($Recurse) {
+        $FilesToChecksum = Get-Files -Folder $Folder -ExcludePatterns $ExcludePatterns -Recurse
+    }
+    Else {
+        $FilesToChecksum = Get-Files -Folder $Folder -ExcludePatterns $ExcludePatterns
+    }
 
     If (-Not $FilesToChecksum) {
         Write-Host 'No files found to process!'

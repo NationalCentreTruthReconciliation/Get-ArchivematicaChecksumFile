@@ -36,11 +36,18 @@ Function CreateOrOverwriteFile {
 
 Function Get-Files {
     Param(
-        [Parameter(Position=1, Mandatory=$True)][String] $Folder,
-        [Parameter(Position=2, Mandatory=$False)][Switch] $Recurse,
-        [Parameter(Position=3, Mandatory=$True)]
+        [Parameter(Mandatory=$True)]
+        [String]
+        $Folder,
+
+        [Parameter(Mandatory=$True)]
         [AllowEmptyCollection()]
-        [String[]] $ExcludePatterns
+        [String[]]
+        $ExcludePatterns,
+
+        [Parameter(Mandatory=$False)]
+        [Switch]
+        $Recurse
     )
 
     If ($Recurse) {
