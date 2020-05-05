@@ -100,8 +100,15 @@ Function Get-ArchivematicaChecksumFile {
     If (-Not (FileOkayToCreateOrOverwrite $ChecksumFile $Force)) {
         return
     }
-    CreateOrOverwriteFile $ChecksumFile $WhatIf
-    Write-ChecksumsToFile $ChecksumFile $Checksums $WhatIf
+
+    If ($WhatIf) {
+        CreateOrOverwriteFile $ChecksumFile -WhatIf
+        Write-ChecksumsToFile $ChecksumFile $Checksums -WhatIf
+    }
+    Else {
+        CreateOrOverwriteFile $ChecksumFile
+        Write-ChecksumsToFile $ChecksumFile $Checksums
+    }
 }
 
 Export-ModuleMember -Function @(
