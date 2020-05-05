@@ -184,4 +184,49 @@ Describe 'File System Integration Tests' -Tag 'Integration' {
             $Files | Should -Not -Match '.DS_Store'
         }
     }
+
+    Context 'Write checksums to file' {
+        Function ContainsBOM($InputFile)
+        {
+            $ResolvedFile = (Resolve-Path $InputFile).Path
+            $contents = New-Object byte[] 3
+            $stream = [System.IO.File]::OpenRead($ResolvedFile)
+            $stream.Read($contents, 0, 3) | Out-Null
+            $stream.Close()
+            return ($contents[0] -eq 0xEF -and $contents[1] -eq 0xBB -and $contents[2] -eq 0xBF)
+        }
+
+        It 'Should not write checksums to file if WhatIf is true' {
+            $TestFile = Join-Path -Path $TestDrive -ChildPath 'checksum.md5'
+            $Checksums = @('md5md5  file1.txt', 'md5md5  file2.txt')
+            Write-ChecksumsToFile -File $TestFile -Checksums $Checksums -WhatIf
+            $TestFile | Should -Not -Exist
+        }
+
+        It 'Should write checksums to file if WhatIf is False' {
+            $TestFile = Join-Path -Path $TestDrive -ChildPath 'checksum.sha1'
+            $Checksums = @('sha1sha1  file1.txt', 'sha1sha1  file2.txt')
+            Write-ChecksumsToFile -File $TestFile -Checksums $Checksums
+            $TestFile | Should -Exist
+            $TestFileContents = Get-Content $TestFile -Raw
+            $TestFileContents | Should -Match 'sha1sha1  file1\.txt'
+            $TestFileContents | Should -Match 'sha1sha1  file2\.txt'
+        }
+
+        It 'Should not write BOM to output file' {
+            $TestFile = Join-Path -Path $TestDrive -ChildPath 'checksum.sha256'
+            $Checksums = @('sha256sha256  file1.txt', 'sha256sha256  file2.txt')
+            Write-ChecksumsToFile -File $TestFile -Checksums $Checksums
+            ContainsBOM $TestFile | Should -BeFalse
+        }
+
+        It 'Should write \n line endings, not \r\n line endings' {
+            $TestFile = Join-Path -Path $TestDrive -ChildPath 'checksum.sha512'
+            $Checksums = @('sha512sha512  file1.txt', 'sha512sha512  file2.txt')
+            Write-ChecksumsToFile -File $TestFile -Checksums $Checksums
+            $FileContentsRaw = Get-Content $TestFile -Raw
+            $FileContentsRaw | Should -Not -Match "`r`n"
+            $FileContentsRaw | Should -Match "`n"
+        }
+    }
 }

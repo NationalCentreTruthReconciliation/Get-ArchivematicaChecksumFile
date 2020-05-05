@@ -63,14 +63,30 @@ Function Get-Files {
 
 Function Write-ChecksumsToFile {
     Param(
-        [Parameter(Position=1, Mandatory=$True)][String] $File,
-        [Parameter(Position=2, Mandatory=$True)][String[]] $Checksums,
-        [Parameter(Position=3, Mandatory=$False)][Switch] $WhatIf
+        [Parameter(Position=1, Mandatory=$True)]
+        [String]
+        $File,
+
+        [Parameter(Position=2, Mandatory=$True)]
+        [String[]]
+        $Checksums,
+
+        [Parameter(Mandatory=$False)]
+        [Switch]
+        $WhatIf
     )
+
+    # Resolve Path even if it does not exist
+    If (Resolve-Path -Path $File -ErrorAction SilentlyContinue) {
+        $ResolvedFile = Resolve-Path $File
+    }
+    Else {
+        $ResolvedFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($File)
+    }
 
     If (-Not $WhatIf) {
         Write-Verbose "Writing checksums to file $File"
-        [IO.File]::WriteAllText((Resolve-Path $File), ($Checksums -Join "`n"))
+        [IO.File]::WriteAllText($ResolvedFile, ($Checksums -Join "`n"))
         (Get-Item $File)
     }
     Else {
