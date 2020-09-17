@@ -6,57 +6,65 @@ using namespace System;
 
 Function Get-ArchivematicaChecksumFile {
     <#
-    .Synopsis
+    .SYNOPSIS
+
     Generate an Archivematica checksum file for a folder full of files.
 
-    .Description
+    .DESCRIPTION
+
     Generates a checksum file for a folder, and places the file into a metadata folder in the folder
     you're targeting. Checksums can be created with MD5, SHA1, SHA256, or SHA512. Checksums can be
     created for a nested directory structure, by passing the -Recurse parameter. By default,
     excludes common junk files like Thumbs.db and .DS_Store. You may override this behaviour with
     the -Exclude parameter.
 
-    .Parameter Algorithm
+    .PARAMETER Algorithm
+
     Choose which algorithm to generate checksums with. May be MD5, SHA1, SHA256, or SHA512.
 
-    .Parameter Folder
+    .PARAMETER Folder
+
     Choose which folder to target to generate checksums for.
 
-    .Parameter Recurse
+    .PARAMETER Recurse
+
     Descend into sub directories and generate checksums for all files in all directories below the
     targeted directory.
 
-    .Parameter Exclude
+    .PARAMETER Exclude
+
     Array of files to exclude from checksum generation. Appends to the default list of files to
     exclude like Thumbs.db and .DS_Store. To clear default exclude files, pass -ClearDefaultExclude
 
-    .Parameter ClearDefaultExclude
-    Clear the list of commonly excluded files. They are:
-    Thumbs.db
-    .DS_Store
-    .Spotlight-V100
-    .Trashes
+    .PARAMETER ClearDefaultExclude
 
-    .Example
+    Clear the list of commonly excluded files. They are:
+    Thumbs.db, .DS_Store, .Spotlight-V100, .Trashes
+
+    .EXAMPLE
+
     Generate MD5 checksum file for C:\Users\you\transfer, ignoring any text files:
 
-    Get-ArchivematicaChecksumFile -Folder C:\Users\you\transfer -Algorithm MD5 -Exclude *.txt
+    PS> Get-ArchivematicaChecksumFile -Folder C:\Users\you\transfer -Algorithm MD5 -Exclude *.txt
 
-    .Example
+    .EXAMPLE
+
     Generate SHA512 checksum file for the current folder and all files in all subfolders:
 
-    Get-ArchivematicaChecksumFile -Folder . -Algorithm SHA512 -Recurse
+    PS> Get-ArchivematicaChecksumFile -Folder . -Algorithm SHA512 -Recurse
 
-    .Example
+    .EXAMPLE
+
     Generate SHA256 checksum file for .\transfers\2020_transfer\, exclude jpgs, tifs, and pngs.
     Include the normally excluded files like Thumbs.db. Generate checksums for every file in every
     subfolder (minus the excluded images):
 
-    Get-ArchivematicaChecksumFile -Folder .\transfers\2020_transfer\ -Algorithm SHA256 -Exclude
+    PS> Get-ArchivematicaChecksumFile -Folder .\transfers\2020_transfer\ -Algorithm SHA256 -Exclude
     *.jpg, *.tif, *.png -ClearDefaultExclude -Recurse
     #>
 
-    [CmdletBinding()] Param(
+    [CmdletBinding()]
+    Param(
         [Parameter(Position=1, Mandatory=$True)]
         [ValidateScript({ If (Test-Path $_ -PathType Container -ErrorAction SilentlyContinue) {
             $True
@@ -111,6 +119,5 @@ Function Get-ArchivematicaChecksumFile {
     }
 }
 
-Export-ModuleMember -Function @(
-    'Get-ArchivematicaChecksumFile'
-)
+
+Export-ModuleMember -Function 'Get-ArchivematicaChecksumFile'
