@@ -12,27 +12,58 @@ At the time of writing, Archivematica only supports checksum files generated wit
 
 The other reason for writing this tool was for us to have an easy-to-use and reliable tool to generate checksum files in Windows with the proper encoding, without having to enter a series of complicated PowerShell commands any time an archivist needs to create checksums.
 
-## How to Install It
+## Installation
 
-[First, make sure you have a PowerShell profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7#how-to-create-a-profile).
+### Prerequisites
 
-For those who are not frequent PowerShell users, you may need to update your execution policy if you have never done so. Without having an Unrestricted execution policy, you will not be able to run the deploy script and PowerShell may not be able to load your profile. To update your execution policy, run:
+1. Ensure you are running at least PowerShell version 5.1. The module supports PowerShell versions 5.1 through to 7.0. You can check the version by running `$PSVersionTable.PSVersion` in PowerShell.
 
-```PowerShell
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
+2. [Make sure you have a PowerShell profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7#how-to-create-a-profile). For the uninitiated, a PowerShell profile is simply a file in your Documents folder, nothing more complicated.
+
+3. On Windows, your script execution policy must be set to `Unrestricted`. If your execution policy is not `Unrestricted`, you may run into installation issues. You can see what your execution policy is by using `Get-ExecutionPolicy`. To update your execution policy, open PowerShell and run:
+
+   `Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force`
+
+### Easy Install
+
+This module is hosted on the [PowerShell Gallery](https://www.powershellgallery.com/packages/AtomDigitalObjectDownloader/0.0.1) and can be installed with `PowerShellGet`.
+
+If you have never installed `ArchivematicaChecksum`, run this command (the line starting with # does not need to be executed):
+
+```powershell
+# NOTE: If asked to trust packages from the PowerShell Gallery, answer yes to continue installation
+PowershellGet\Install-Module ArchivematicaChecksum -Scope CurrentUser -Force
 ```
 
-After you have a profile and an appropriate execution policy set, download or clone this repository, and run the included `DeployModule.ps1` script at the top level of this repository. To run the script, open up PowerShell in the same folder as the `DeployModule.ps1` script, and enter the command (optionally using the `-AutoAddImport` option)
+If you have installed it before and want to update the module, run this command:
+
+```powershell
+PowerShellGet\Update-Module ArchivematicaChecksum
+```
+
+After installing, it is recommended to import the module in your PowerShell profile. You may skip this step if you *really* don't want to do it.
+
+To import the module in your profile, you will need to add the line `Import-Module ArchivematicaChecksum` to your profile. To do it automatically, use:
+
+```powershell
+Add-Content $Profile "`nImport-Module ArchivematicaChecksum" -NoNewLine
+```
+
+If you want to do it manually, open your profile with `notepad $Profile` and add the line `Import-Module ArchivematicaChecksum` anywhere in the file.
+
+### Manual Install for Developers
+
+If you are a developer and are interested in modifying this module, there is a deploy script included in this repo that you don't get when you install via the Powershell Gallery. The deploy script is extremely useful for quickly updating the module code on your computer. Anytime you change one of the files, you can re-run the deploy script and the updated files will be deployed to your Modules folder.
+
+To manually install the code, download or clone this repository, and run the included `DeployModule.ps1` script at the top level of this repository. To run the script, open up PowerShell in the same folder as the `DeployModule.ps1` script, and enter the command (optionally using the `-AutoAddImport` option):
 
 ```PowerShell
 .\DeployModule.ps1 -AutoAddImport
 ```
 
-This deploy script will copy the code for the ArchivematicaChecksum module into your PowerShell Modules folder, and will add a new line to your profile that tells PowerShell to import the code when you launch PowerShell in the future. If you would prefer to manually edit your profile or otherwise do not want the deploy script to touch your profile file, you can forgo the `-AutoAddImport` option and manually add the line `Import-Module ArchivematicaChecksum` to your profile. If you choose to go this route, the deploy script will let you know where your profile is, in case you forget.
+This deploy script will copy the code for the `ArchivematicaChecksum` module into your PowerShell Modules folder, and will add a new line to your profile that tells PowerShell to import the code when you launch PowerShell in the future. If you would prefer to manually edit your profile or otherwise do not want the deploy script to touch your profile file, you can forgo the `-AutoAddImport` option and manually add the line `Import-Module ArchivematicaChecksum` to your profile. If you choose to go this route, the deploy script will let you know where your profile is, in case you forget.
 
-After deploying the code and adding the import statement manually in your profile if you chose to do so, you will need to close and re-open PowerShell to have access to the new command: `Get-ArchivematicaChecksumFile`.
-
-## How to Use It
+## Using the Script
 
 We will use the following directory structure for these examples:
 
@@ -105,7 +136,8 @@ You must always use the `-Folder` and `-Algorithm` parameters, but there are a n
 
 ## Testing
 
-`Get-ArchivematicaChecksum` is tested using Pester 4. To run the tests, you must have Pester 4 installed. These are useful resources for finding out how to install it:
+`Get-ArchivematicaChecksum` is tested using Pester 4. To run the tests, you must have Pester 4 installed. Pester can be complicated to get up and running, so I will not mention here how to install it since this is not the Pester documentation. These are useful resources for finding out how to install it:
+
 - [Pester Installation Documentation](https://pester.dev/docs/introduction/installation)
 - [PowerShell Gallery - Pester](https://www.powershellgallery.com/packages/Pester/4.6.0)
 
