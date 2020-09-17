@@ -93,9 +93,8 @@ AliasesToExport = @()
 PrivateData = @{
 
     PSData = @{
-
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('Archivematica', 'Artefactual')
 
         # A URL to the license for this module.
         # LicenseUri = ''
@@ -127,6 +126,5 @@ PrivateData = @{
 
 # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
 # DefaultCommandPrefix = ''
-
 }
 
